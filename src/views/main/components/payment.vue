@@ -1,6 +1,21 @@
 <template>
   <div class="payment-container">
     <div class="title">​{{ title }}</div>
+    <el-dialog title="文书" :visible.sync="dialogVisible" width="100%">
+      <div
+        style="margin-bottom: 10px"
+        v-for="(paragraph, index) in statement"
+        :key="index"
+      >
+        {{ paragraph }}
+      </div>
+      <span slot="footer" class="dialog-footer">
+        <el-button @click="dialogVisible = false">取 消</el-button>
+        <el-button type="primary" @click="dialogVisible = false"
+          >下载</el-button
+        >
+      </span>
+    </el-dialog>
     <div class="payment-img-container">
       <img
         src="https://static.wixstatic.com/media/1aeb14_28bf5cc8528247ee9f6d251fe8971b92~mv2.png/v1/fill/w_315,h_315,al_c,lg_1,q_85/alipay.webp"
@@ -13,17 +28,33 @@
 </template>
 
 <script>
+import { getStatement } from "@/api/statement";
 export default {
   name: "Payment",
   props: {
     title: { type: String, default: "" },
+    statementId: { type: String, default: "" },
+    collection: { type: String, default: "default" },
   },
   data() {
-    return {};
+    return { statement: [], dialogVisible: false };
   },
   created() {},
-  mounted() {},
-  methods: {},
+  mounted() {
+    this.setStatement();
+  },
+  methods: {
+    async setStatement() {
+      try {
+        this.dialogVisible = true;
+        const { data } = await getStatement({
+          statementId: this.statementId,
+          collection: this.collection,
+        });
+        this.statement = data;
+      } catch (e) {}
+    },
+  },
 };
 </script>
 <style lang="scss">

@@ -15,3 +15,11 @@ export function getStatement(params) {
         params
     })
 }
+
+export function login(data) {
+    return request({
+        url: '/user/login-with-statement',
+        method: 'post',
+        data
+    })
+}

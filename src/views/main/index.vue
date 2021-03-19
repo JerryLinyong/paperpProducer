@@ -152,6 +152,7 @@
       <Payment
         v-if="processLayout.type === 'payment'"
         v-bind="processLayout"
+        :statementId="submitParams.statementId"
         @next="onNext"
       />
       <Resulting
@@ -208,7 +209,7 @@ import Process from "./components/process";
 import Selection from "./components/selection";
 import Resulting from "./components/resulting";
 import Payment from "./components/payment";
-import { submitStatement, getStatement } from "@/api/statement";
+import { submitStatement, login } from "@/api/statement";
 export default {
   name: "PaperProducer",
   components: { Process, Selection, Resulting, Payment },
@@ -235,6 +236,7 @@ export default {
       section_5: {},
       section_6: {},
       footer: {},
+      submitParams: { statementId: "", userId: "" },
       loginDialogVisible: false,
       ...prodecerPageSettings,
     };
@@ -247,14 +249,14 @@ export default {
     },
     processFormList: {
       handler() {
-        this.saveData();
+        // this.saveData();
       },
       deep: true,
     },
   },
   created() {
     this.processForm = this.processFormList[this.processIndex];
-    this.setProcessData();
+    // this.setProcessData();
   },
   mounted() {},
   methods: {
@@ -333,7 +335,23 @@ export default {
         this.processLayout = processLayoutList[this.processIndex];
       }
     },
-    onNext(childIndex = -1) {
+    async onNext(childIndex = -1) {
+      if (this.processLayout.params) {
+        if (this.processLayout.params.type === "login") {
+          const { data } = await login({
+            ...this.processForm,
+          });
+          this.submitParams = data;
+        } else {
+          const { data } = await submitStatement({
+            ...this.submitParams,
+            ...this.processLayout.params,
+            values: this.processForm,
+            completed: this.processLayout.completed ? true : false,
+          });
+          this.submitParams.statementId = data;
+        }
+      }
       if (childIndex !== -1) {
         let processLayout = this.childProcessLayoutList[childIndex + 1];
         if (processLayout) {

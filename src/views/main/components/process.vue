@@ -20,14 +20,14 @@
       <div class="form-subtitle">{{ item.subtitle }}</div>
       <div
         class="form-error"
-        v-if="checkFeedback[index] && checkFeedback[index].error"
+        v-if="checkFeedback[item.key] && checkFeedback[item.key].error"
       >
-        {{ "（ " + checkFeedback[index].error + " ）" }}
+        {{ "（ " + checkFeedback[item.key].error + " ）" }}
       </div>
       <el-select
         v-if="item.type === 'select'"
         :placeholder="item.placeholder"
-        v-model="data[index]"
+        v-model="data[item.key]"
       >
         <el-option
           v-for="item in item.options"
@@ -40,7 +40,7 @@
       <el-input
         :type="item.type"
         v-else
-        v-model="data[index]"
+        v-model="data[item.key]"
         :placeholder="item.placeholder || ''"
       ></el-input>
     </div>

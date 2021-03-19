@@ -60,7 +60,7 @@ export default {
   mounted() {},
   methods: {
     onSelect({ process, type }) {
-      this.data.type = type;
+      // this.data.type = type;
       if (process) {
         process.childIndex = this.childIndex;
         this.$emit("setProcess", process);
