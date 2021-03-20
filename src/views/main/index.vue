@@ -210,6 +210,7 @@ import Selection from "./components/selection";
 import Resulting from "./components/resulting";
 import Payment from "./components/payment";
 import { submitStatement, login } from "@/api/statement";
+import request from "@/utils/request";
 export default {
   name: "PaperProducer",
   components: { Process, Selection, Resulting, Payment },
@@ -301,7 +302,22 @@ export default {
         });
       }
     },
-    login() {
+    async login() {
+      // await request({
+      //   url: "https://sms.tencentcloudapi.com",
+      //   method: "get",
+      //   params: {
+      //     Action: "SendSms",
+      //     Version: "2019-07-11",
+      //     ["PhoneNumberSet.0"]: "+8615061883830",
+      //     TemplateID: 492304,
+      //     SmsSdkAppid: 1400290678,
+      //     Sign: "e29a873db1b733c235df218e0c98bc8f",
+      //     Timestamp: Date.parse(new Date()),
+      //     Nonce: parseInt(Math.random() * 10000),
+      //     SecretId: "",
+      //   },
+      // });
       if (!/^1(3|4|5|6|7|8|9)\d{9}$/.test(this.phone)) {
         this.$message({
           message: "请输入正确手机号码",

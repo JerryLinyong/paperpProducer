@@ -65,6 +65,13 @@ export let constantRoutes = [
     path: '/',
     component: () => import('@/views/main/index'),
     meta: { title: '', icon: 'user' }
+  },
+  {
+    name: 'Paper',
+    path: '/paper',
+    component: () => import('@/views/paper/index'),
+    meta: { title: '', icon: 'user' },
+    props: true
   }
 ]
 
