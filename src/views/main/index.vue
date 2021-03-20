@@ -9,13 +9,14 @@
         </div>
       </div>
       <div class="login-container">
-        <div>
+        <div v-if="!isLogin">
           已经填写过了？<span
             class="login-title"
             @click="loginDialogVisible = true"
             >请登录</span
           >
         </div>
+        <div v-else class="login-title" @click="clearUserInfo">退出登录</div>
       </div>
     </div>
     <div v-show="!isProducing" class="main-producer-container">
@@ -186,13 +187,13 @@
           v-model="phone"
           placeholder="请输入手机号码"
         ></el-input>
-        <el-button type="primary" @click="getPhoneCode">获取验证码</el-button>
+        <!-- <el-button type="primary" @click="getPhoneCode">获取验证码</el-button> -->
       </div>
-      <el-input
+      <!-- <el-input
         style="width: 200px"
         v-model="phoneCode"
         placeholder="验证码"
-      ></el-input>
+      ></el-input> -->
       <span slot="footer" class="dialog-footer">
         <el-button type="primary" @click="login">登录</el-button>
         <el-button @click="loginDialogVisible = false">取 消</el-button>
@@ -210,20 +211,21 @@ import Selection from "./components/selection";
 import Resulting from "./components/resulting";
 import Payment from "./components/payment";
 import { submitStatement, login } from "@/api/statement";
+import { getUserInfo, saveUserInfo, clearUserInfo } from "./utils/localStorage";
 import request from "@/utils/request";
 export default {
   name: "PaperProducer",
   components: { Process, Selection, Resulting, Payment },
   data() {
     this.saveTimer = null;
-    this.saveKey = "producing_form_data";
     let processIndex = 0;
     return {
+      isLogin: false,
       processIndex,
       isProducing: false,
-      processLayout: processLayoutList[processIndex],
+      processLayout: {},
       childProcessLayoutList: [],
-      processFormList: processLayoutList.map((i) => ({})),
+      processFormList: [],
       processForm: {},
       imgTop: 0,
       email: "",
@@ -240,24 +242,31 @@ export default {
       submitParams: { statementId: "", userId: "" },
       loginDialogVisible: false,
       ...prodecerPageSettings,
+      ...getUserInfo(),
     };
   },
   computed: {},
   watch: {
-    processIndex() {
-      this.processLayout = processLayoutList[this.processIndex];
-      this.processForm = this.processFormList[this.processIndex];
+    processIndex: {
+      handler() {
+        this.processLayout = processLayoutList[this.processIndex];
+        if (!this.processFormList[this.processIndex]) {
+          this.processFormList[this.processIndex] = {};
+        }
+        this.processForm = this.processFormList[this.processIndex];
+        this.saveData();
+      },
+      immediate: true,
     },
     processFormList: {
       handler() {
-        // this.saveData();
+        this.saveData();
       },
       deep: true,
     },
   },
   created() {
     this.processForm = this.processFormList[this.processIndex];
-    // this.setProcessData();
   },
   mounted() {},
   methods: {
@@ -270,19 +279,6 @@ export default {
         this.processForm = this.processFormList[this.processIndex][0];
       } else {
         this.processLayout = process;
-      }
-    },
-    setProcessData() {
-      // TODO: 模拟取数据
-      if (window.localStorage) {
-        const data = window.localStorage.getItem(this.saveKey);
-        if (data) {
-          let savedData = JSON.parse(data);
-          if (savedData.length === this.processFormList.length) {
-            this.processFormList = savedData;
-            this.processForm = savedData[0];
-          }
-        }
       }
     },
     makeAppointment() {
@@ -323,24 +319,38 @@ export default {
           message: "请输入正确手机号码",
           type: "error",
         });
-      } else if (!this.phoneCode) {
-        this.$message({
-          message: "请输入验证码",
-          type: "error",
-        });
-      } else {
+      }
+      // else if (!this.phoneCode) {
+      //   this.$message({
+      //     message: "请输入验证码",
+      //     type: "error",
+      //   });
+      // }
+      else {
+        this.isLogin = true;
+        this.loginDialogVisible = false;
+        this.saveData();
       }
     },
+    clearUserInfo() {
+      this.isLogin = false;
+      this.isProducing = false;
+      this.processFormList = [];
+      this.processForm = {};
+      this.processIndex = 0;
+      clearUserInfo();
+    },
     saveData() {
+      if (!this.isLogin) return;
       if (this.saveTimer) clearTimeout(this.saveTimer);
       this.saveTimer = setTimeout(() => {
         // TODO: 模拟储存
-        if (window.localStorage) {
-          window.localStorage.setItem(
-            this.saveKey,
-            JSON.stringify(this.processFormList)
-          );
-        }
+        saveUserInfo({
+          isLogin: this.isLogin,
+          processIndex: this.processIndex,
+          processFormList: this.processFormList,
+          submitParams: this.submitParams,
+        });
       }, 1500);
     },
     onBack() {
@@ -360,9 +370,9 @@ export default {
         } else {
           const { data } = await submitStatement({
             ...this.submitParams,
-            ...this.processLayout.params,
             values: this.processForm,
             completed: this.processLayout.completed ? true : false,
+            ...this.processLayout.params,
           });
           this.submitParams.statementId = data;
         }

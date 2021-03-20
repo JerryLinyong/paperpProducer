@@ -194,11 +194,12 @@ const processLayoutList = [
     {
         type: 'selection', // form/selection 默认form
         title: '该项目更偏向学术研究还是就业导向？',
+        params: { position: 'p3', selection: 'false' },
         selections: [{
             title: '是',
             color: '#a7d1d4',
             process: {
-                params: { position: 'p3', selection: 's1' },
+                params: { position: 'p3', selection: 'true' },
                 title: '第3/7步：研究方向',
                 description: ['浏览该项目官网，找三个跟自己想做的研究方向/职业发展方向相关的教授，填写ta的全名/擅长领域'],
                 form: [
@@ -235,7 +236,7 @@ const processLayoutList = [
         }, { title: '否' }]
     },
     {
-        params: { position: 'p4', selection: 's1' },
+        params: { position: 'p4' },
         title: '第4/7步：未来展望',
         description: ['一句话描述你毕业后想做什么，以及如何为这个领域做出贡献。',
             '范文：',
